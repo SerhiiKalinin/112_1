@@ -1,0 +1,149 @@
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+public class JUnitOLX_TestFirst
+{
+    public static WebDriver driver;
+    @Before
+    public void Arrange()
+    {
+        System.setProperty("webdriver.chrome.driver", "C://chromedriver.exe");
+        driver = new ChromeDriver();
+    }
+
+    @Test
+    public void Acivate() {
+        driver.get("https://olx.ua/");
+        driver.manage().window().maximize();
+        fieldClicker("//a[@class='cookiesBarClose abs close']");
+        WebElement searchField = driver.findElement(By.name("q"));
+        searchField.sendKeys("Норковая шуба");
+        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        WebElement listOfResults = driver.findElement(By.xpath("//*[@id='autosuggest-div']/ul"));
+        WebElement objectOFSearch = (new WebDriverWait(driver, 20))
+                .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='autosuggest-div']/ul/li[1]/a/span[1]")));
+        //WebElement objectOFSearch = driver.findElement(By.xpath("//*[@id='autosuggest-div']/ul/li[1]/a)"));
+        objectOFSearch.click();
+
+        closeJS("highlight-close", 20);
+
+
+        fieldClicker("//input[@id='cityField']");
+        fieldClicker("//a[@class='regionlink region_link'][@data-id='9']");
+        fieldClicker("//a[@id='a-region-62']");
+        fieldClicker("//div[@class='wrapper']");
+
+        fieldClicker("//li[@class='subcategory']");
+        fieldClicker("//a[@class='tdnone block c27 brbott-4 category-choose category_choose96 search-choose']");
+        fieldClicker("//div[@class='wrapper']");
+
+        fieldClicker("//li[@id='param_district']");
+        fieldClicker("//a[@class='tdnone block c27 brbott-4 district-choose district_choose89 search-choose']");
+        fieldClicker("//div[@class='wrapper']");
+/*
+
+
+
+        fieldClicker("//div[@class='filter-item filter-item-from rel numeric-item price']");
+        intClicker("//*[@id='param_price']/div/div[1]/label/input", 10000);
+        fieldClicker("//div[@class='wrapper']");
+
+        fieldClicker("//div[@class='filter-item filter-item-to rel numeric-item price']");
+        intClicker("//*[@id='param_price']/div/div[2]/a/span[1]", 50000);
+        fieldClicker("//div[@class='wrapper']");
+*/
+        intClickerTotal("//div[@class='filter-item filter-item-from rel numeric-item price']",
+                "//*[@id='param_price']/div/div[1]/label/input",1,0,0,0,0);
+
+        fieldClicker("//div[@class='filter-item rel filter-item-state']");
+        fieldClicker("//label[@class='block value c000 lheight18']");
+        fieldClicker("//div[@class='wrapper']");
+
+        intClickerTotal("//div[@class='filter-item filter-item-to rel numeric-item price']",
+                "//*[@id='param_price']/div/div[2]/label/input", 5,0,0,0,0);
+
+
+        driver.findElement(By.xpath("//input[@type='submit']")).click();
+
+        WebDriverWait wait = new WebDriverWait(driver, 15);
+        WebElement clickRes = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@class='marginright5 link linkWithHash detailsLink']")));
+        //in case of not clickable link that is below
+        String el = clickRes.getAttribute("href");
+
+        driver.get(el);
+
+
+        //driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+        //clickRes.click();
+
+        driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+        WebElement res = driver.findElement(By.xpath("//*[text()[contains(.,'Свяжитесь с автором объявления')]]"));
+        String reS = res.getText();
+        //String reS = res.toString();
+        System.out.println(reS);
+        Assert.assertTrue(reS, true);
+    }
+
+
+    @After
+    public void tearDown()
+    {
+        driver.quit();
+    }
+
+
+    public static void closeJS(String name, int secondsWait)
+    {
+        WebElement closeJS = (new WebDriverWait(driver, secondsWait))
+                .until(ExpectedConditions.presenceOfElementLocated(By.className(name)));
+        closeJS.click();
+    }
+
+    public static void fieldClicker(String xpath)
+    {
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebElement fieldChose = wait.until(ExpectedConditions.visibilityOf(driver.findElement((By.xpath(xpath)))));
+        //WebElement fieldChose = driver.findElement((By.xpath(xpath)));
+        fieldChose.click();
+    }
+    public static void intClicker(String xpath, int price)
+    {
+        String priceKeys = Integer.toString(price);
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebElement fieldSendKeys = wait.until(ExpectedConditions.visibilityOf(driver.findElement((By.xpath(xpath)))));
+        //WebElement fieldSendKeys = driver.findElement((By.xpath(xpath)));
+        fieldSendKeys.click();
+        fieldSendKeys.sendKeys(priceKeys);
+
+    }
+
+    public static void intClickerTotal(String xpath1, String xpath2, int firstDigit, int secondDigit, int thirdDigit, int fourthDigit, int fifthDigit)
+    {
+        ArrayList<Integer> listOfDigits = new ArrayList();
+        listOfDigits.add(0,firstDigit);
+        listOfDigits.add(1,secondDigit);
+        listOfDigits.add(2,thirdDigit);
+        listOfDigits.add(3,fourthDigit);
+        listOfDigits.add(4,fifthDigit);
+        for (int i = 0; i<5; i++)
+        {
+            fieldClicker(xpath1);
+            intClicker(xpath2, listOfDigits.get(i));
+            fieldClicker("//div[@class='wrapper']");
+        }
+
+    }
+}
